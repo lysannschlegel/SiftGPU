@@ -2,17 +2,12 @@
 #    SiftGPU congiruation:  CUDA, SSE, TIMING  
 #################################################################
 #enable siftgpu server
-siftgpu_enable_server = 0
+siftgpu_enable_server ?= 0
 #enable OpenCL-based SiftGPU? not finished yet; testing purpose
-siftgpu_enable_opencl = 0
+siftgpu_enable_opencl ?= 0
 #------------------------------------------------------------------------------------------------
 # enable CUDA-based SiftGPU?
-simple_find_cuda = $(shell locate libcudart.so)
-ifneq ($(simple_find_cuda), )
- 	siftgpu_enable_cuda = 0
-else
-	siftgpu_enable_cuda = 0
-endif
+siftgpu_enable_cuda ?= 0
 
 CUDA_INSTALL_PATH = /usr/local/cuda
 #change  additional  settings, like SM version here if it is not 1.0 (eg. -arch sm_13 for GTX280)
@@ -20,16 +15,16 @@ CUDA_INSTALL_PATH = /usr/local/cuda
 #siftgpu_cuda_options = -arch sm_10
 #--------------------------------------------------------------------------------------------------
 # enable SSE optimization for GL-based implementations
-siftgpu_enable_sse = 1
+siftgpu_enable_sse ?= 1
 siftgpu_sse_options = -march=core2 -mfpmath=sse
 #--------------------------------------------------------------------------------------------------
 # openGL context creation.  1 for glut, 0 for xlib
-siftgpu_prefer_glut = 1
+siftgpu_prefer_glut ?= 1
 #whether remove dependency on DevIL (1 to remove, the output libsiftgpu.so still works for VisualSFM)
-siftgpu_disable_devil = 0
+siftgpu_disable_devil ?= 0
 #------------------------------------------------------------------------------------------------
 #whether SimpleSIFT uses runtime loading of libsiftgpu.so or static linking of libsiftgpu.a
-simplesift_runtime_load = 1
+simplesift_runtime_load ?= 1
 
 #################################################################
 
@@ -141,7 +136,8 @@ $(ODIR_SIFTGPU)/%.o: $(SRC_SIFTGPU)/%.cpp $(DEPS_SIFTGPU)
 
 
 ifneq ($(siftgpu_enable_cuda), 0)
-NVCC_FLAGS = -I$(INC_DIR) -I$(CUDA_INC_PATH) -DCUDA_SIFTGPU_ENABLED -O2 -Xcompiler -fPIC
+NVIDIA_HOST_COMPILER ?= $(CXX)
+NVCC_FLAGS = -m64 -I$(INC_DIR) -I$(CUDA_INC_PATH) -DCUDA_SIFTGPU_ENABLED -O2 -Xcompiler -fPIC --compiler-bindir=$(NVIDIA_HOST_COMPILER)
 ifdef siftgpu_cuda_options
 	NVCC_FLAGS += $(siftgpu_cuda_options)
 endif
